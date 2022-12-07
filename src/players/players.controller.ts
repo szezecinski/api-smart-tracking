@@ -1,9 +1,8 @@
-import { Body, Controller, Delete, Get, Post, Query } from '@nestjs/common';
+import { Body, Controller, Delete, Get, Post, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CreatePlayerDto } from './dtos/create-player.dto';
 import { Player } from './interfaces/player.interface';
 import { PlayersService } from './players.service';
 
-//http://localhost:8080/api/v1/players?email=111
 //mongodb-compass
 @Controller('api/v1/players')
 export class PlayersController {
@@ -11,6 +10,7 @@ export class PlayersController {
     constructor(private playerService: PlayersService) { }
 
     @Post()
+    @UsePipes(ValidationPipe)
     async createOrUpdate(@Body() dto: CreatePlayerDto) : Promise<Player> {
         return await this.playerService.createOrUpdate(dto)
     }
