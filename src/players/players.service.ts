@@ -10,16 +10,6 @@ export class PlayersService {
 
     constructor(@InjectModel('player') private readonly playerModel: Model<Player>) { }
     
-    async createOrUpdate(dto: CreatePlayerDto): Promise<Player> {
-        const player = await this.playerModel.findOne({email: dto.email}).exec()
-
-        if(player != undefined){
-            return await this.update(dto)
-        }else{
-            return await this.create(dto)
-        }
-    }
-
     async get(): Promise<Player[]> {
         return await this.playerModel.find().exec()
     }
@@ -34,16 +24,42 @@ export class PlayersService {
         return player
     }
 
-    async delete(email: string): Promise<any> {
-        return await this.playerModel.deleteOne({email}).exec()
+    async getById(_id: string): Promise<Player> {
+        const player = await this.playerModel.findOne({_id}).exec()
+        
+        if(!player) {
+            throw new NotFoundException('Player not found')
+        }
+
+        return player
     }
 
-    private async create(dto: CreatePlayerDto) : Promise<Player> {
+    async delete(_id: string): Promise<any> {
+        //checking if it exists
+        await this.getById(_id)
+        
+        return await this.playerModel.deleteOne({_id}).exec()
+    }
+
+    async create(dto: CreatePlayerDto) : Promise<Player> {
+        const playerExists = await this.getPlayer(dto.email)
+        
+        if(playerExists){
+            throw new NotFoundException('Player already exists')
+        }
+
         const player = new this.playerModel(dto)
         return await player.save()
     }
 
-    private async update(dto: CreatePlayerDto) : Promise<Player> {
-        return await this.playerModel.findByIdAndUpdate({email: dto.email}, {$set: dto}).exec()
+    async update(_id: string, dto: CreatePlayerDto) : Promise<Player> {
+        //checking if it exists
+        await this.getById(_id)
+
+        return await this.playerModel.findByIdAndUpdate({ _id }, {$set: dto}).exec()
+    }
+
+    private async getPlayer(email: string): Promise<Player> {
+        return await this.playerModel.findOne({email})
     }
 }
