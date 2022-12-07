@@ -1,6 +1,7 @@
 import { Body, Controller, Delete, Get, Post, Query, UsePipes, ValidationPipe } from '@nestjs/common';
 import { CreatePlayerDto } from './dtos/create-player.dto';
 import { Player } from './interfaces/player.interface';
+import { PlayersValidationParamsPipe } from './pipes/players-validation-params.pipe';
 import { PlayersService } from './players.service';
 
 //mongodb-compass
@@ -16,7 +17,7 @@ export class PlayersController {
     }
 
     @Get()
-    async getByEmail(@Query('email') email: string): Promise<Player | Player[]> {
+    async getByEmail(@Query('email', PlayersValidationParamsPipe) email: string): Promise<Player | Player[]> {
         if(email){
             return await this.playerService.getByEmail(email)
         }else{
@@ -25,7 +26,7 @@ export class PlayersController {
     }
 
     @Delete()
-    async delete(@Query('email') email: string): Promise<void> {
+    async delete(@Query('email', PlayersValidationParamsPipe) email: string): Promise<void> {
         await this.playerService.delete(email)
     }
 
